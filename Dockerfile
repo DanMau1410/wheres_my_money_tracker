@@ -1,6 +1,7 @@
 # Quality gate and builds for Where's My Money (see .claude/specs/SPEC-devops.md).
 #   docker build --target toolchain --build-arg UID=(id -u) --build-arg GID=(id -g) -t wmmt-toolchain .
 #   docker build --target ci .
+#   docker build --target web --build-arg APP_ENV=staging -t wmmt-web .   (APP_ENV: staging or prod)
 # The Android SDK and NDK for Linux are x86_64 only, so this image is amd64 only.
 
 # ---------------------------------------------------------------------------
@@ -78,3 +79,29 @@ RUN sh tool/check_coverage.sh 80
 RUN flutter build web
 RUN --mount=type=cache,target=/home/dev/.gradle,uid=$UID,gid=$GID \
     flutter build apk --debug
+
+# ---------------------------------------------------------------------------
+# ci-report: only the coverage file, so CI exports it from the same build.
+# ---------------------------------------------------------------------------
+FROM scratch AS ci-report
+COPY --from=ci /app/coverage/lcov.info /
+
+# ---------------------------------------------------------------------------
+# build-web: the release web build for one environment.
+# ---------------------------------------------------------------------------
+FROM ci AS build-web
+ARG APP_ENV
+# CanvasKit is bundled instead of loaded from Google's CDN, so the CSP can stay 'self'.
+RUN case "$APP_ENV" in \
+      staging|prod) ;; \
+      *) echo "APP_ENV must be staging or prod, got '$APP_ENV'" >&2; exit 1 ;; \
+    esac \
+ && flutter build web --release --no-web-resources-cdn --dart-define-from-file="config/$APP_ENV.json"
+
+# ---------------------------------------------------------------------------
+# web: the release build served by unprivileged nginx on port 8080.
+# ---------------------------------------------------------------------------
+FROM nginxinc/nginx-unprivileged:stable-alpine@sha256:f5116ed4606f3eb015dd4a8e28cb9b351476dc0ad4bc6e9f93b19cec130cdf03 AS web
+COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build-web /app/build/web /usr/share/nginx/html
+EXPOSE 8080
