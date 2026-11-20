@@ -33,6 +33,7 @@ Only emails the developer adds to an allowlist can create an account. The server
   - `[auth.external.google]`: `enabled = true`, `client_id = "env(GOOGLE_WEB_CLIENT_ID)"`, `secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"`; both values live in the git-ignored `supabase/.env`
   - local emails go to the stack's built-in mail catcher (`supabase status` prints its URL), never to Gmail
 - **Seed users** in `supabase/seed.sql`: confirmed made-up users `alice@example.com` and `bob@example.com` with a local-only password, for integration tests and manual checks.
+- **Config:** `AppConfig` gains `googleWebClientId` from `GOOGLE_WEB_CLIENT_ID`, added to all three `config/*.json` files in the same slice (startup fails fast when it's empty).
 - **Flutter, `lib/data/services/`:**
   - `google_sign_in_service.dart` wraps `GoogleSignIn.instance` (v7: `initialize(serverClientId: GOOGLE_WEB_CLIENT_ID)`, then `authenticate()`) and returns the ID token and access token
 - **Flutter, `lib/data/repositories/`:**

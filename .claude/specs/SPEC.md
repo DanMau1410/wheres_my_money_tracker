@@ -46,11 +46,12 @@ In the spreadsheets, every transaction is copied by hand into two or more accoun
 | API key | publishable key (`sb_publishable_…`) | legacy `anon`/`service_role` keys are being retired by the end of 2026 |
 | Lints | `flutter_lints` | analyzed with `--fatal-infos` |
 | DB tests | pgTAP via `supabase test db` | `supabase/tests/` |
-| Local Supabase | Supabase CLI (pinned) + Docker | CLI v3 targets the local stack by default; check commands with `--help` |
+| Supabase CLI | 3.2.0 + Docker | pinned in CI through `supabase/setup-cli`; v3 targets the local stack by default (`--remote=REF` for hosted projects); check commands with `--help` |
 | Email | Gmail SMTP with an app password | v1; Resend or Brevo later |
 | Docker toolchain | `ubuntu:24.04` + OpenJDK 21 + Flutter 3.47.6 + Android command-line tools | official sources, pinned; JDK 21 suits the project's AGP 9.1 / Gradle 9.3.1 |
 | Docker web server | `nginxinc/nginx-unprivileged:stable-alpine` | non-root, pinned by digest |
 | CI/CD | GitHub Actions + Dependabot | see [SPEC-devops.md](SPEC-devops.md) |
+| Actions | `actions/checkout` v7.0.1, `docker/setup-buildx-action` v4.4.1, `docker/build-push-action` v7.4.0, `actions/upload-artifact` v7.0.2, `supabase/setup-cli` v3.2.0 | official publishers, pinned by commit SHA (approved 2026-11-19) |
 
 No `freezed`, `shared_preferences` or mocking packages in v1. Anything else needs asking first (dev_rules §7).
 
@@ -151,7 +152,7 @@ android/app/src/debug/        → debug-only network security config (cleartext 
 Dockerfile, .dockerignore     → stages: toolchain, ci, build-web, web
 docker/nginx.conf             → web server: SPA fallback + security headers
 .github/                      → workflows/ (ci, deploy-db, release), dependabot.yml
-.claude/specs/                → SPEC.md (this file), SPEC-MODULE.md, REVIEW.md
+.claude/specs/                → SPEC.md (this file), SPEC-MODULE.md, REVIEW.md (git-ignored per-slice handoff)
 .claude/tasks/                → plan.md, todo.md
 ```
 
@@ -344,9 +345,9 @@ No analytics, no crash reporting, and no financial data or emails in logs.
 - **reproducible:** the same toolchain and locked dependencies locally, in Docker and in CI
 
 **Starting point (2026-11-19):**
-- GitHub remote `origin` (public repo), branches `main` and `dev`, and the current work on `docs/project-definition`
-- no tags, no CI, no rulesets yet
-- Flutter 3.47.6 locally; `pubspec.lock` committed
+- GitHub remote `origin` (public repo), branches `main` and `dev`
+- rulesets `Dev PR` (squash only) and `Main PR` (merge commits only) require a PR, with no checks yet; no tags, no CI
+- Flutter 3.47.6 locally; `pubspec.lock` was ignored by the repo's original `.gitignore` (`*.lock`), and Stage 0 commits it
 
 The details (environments, Docker, CI, CD, release, supply chain) are in [SPEC-devops.md](SPEC-devops.md).
 
@@ -416,6 +417,7 @@ Deferred problems, each with what triggers its fix. Delete an entry when its fix
 | 2026-11-19 | DevOps and Docker from Stage 0; MVVM (Flutter guide) with `provider` and `go_router` |
 | 2026-11-19 | Self sign-up with email/password and Google, limited to an allowlist; Gmail SMTP app password for v1 emails |
 | 2026-11-19 | Specs split into this project spec plus one spec per module; one module per stage |
+| 2026-11-19 | Stage 0 plan: five pinned Actions and Supabase CLI 3.2.0; Android signing secrets in `production`, behind a required reviewer; each CI check is required as soon as it's green; `GOOGLE_WEB_CLIENT_ID` arrives with `auth` |
 
 ## Open Questions
 
