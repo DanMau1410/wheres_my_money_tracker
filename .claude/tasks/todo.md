@@ -34,14 +34,14 @@ Claude gives the exact commands, then checks both rulesets with a read-only `gh 
 - `pubspec.lock` becomes tracked.
 
 **Acceptance criteria:**
-- [ ] `flutter pub get` passes, and `git status` shows `pubspec.lock` as a new file
-- [ ] With the pin temporarily changed to `3.48.0`, `flutter pub get` fails (AC-OPS-1, local half), then the change is reverted
-- [ ] Each spec edit matches plan.md, and dev_rules §7/§8 still mirror SPEC.md's Boundaries
+- [x] `flutter pub get` passes, and `git status` shows `pubspec.lock` as a new file
+- [x] With the pin temporarily changed to `3.48.0`, `flutter pub get` fails (AC-OPS-1, local half), then the change is reverted
+- [x] Each spec edit matches plan.md, and dev_rules §7/§8 still mirror SPEC.md's Boundaries
 
 **Verification:**
-- [ ] `flutter pub get && flutter analyze --fatal-infos && flutter test`
-- [ ] Both secret scans print nothing
-- [ ] `git check-ignore -v pubspec.lock` prints nothing
+- [x] `flutter pub get && flutter analyze --fatal-infos && flutter test`
+- [x] Both secret scans print nothing
+- [x] `git check-ignore -v pubspec.lock` prints nothing
 
 **Dependencies:** none
 **Files:** `pubspec.yaml`, `pubspec.lock`, `.gitignore`, `.claude/specs/SPEC.md`, `.claude/specs/SPEC-devops.md` (plus one-line edits in SPEC-app-foundation and SPEC-auth)
@@ -61,14 +61,14 @@ Claude gives the exact commands, then checks both rulesets with a read-only `gh 
 `.dockerignore` gets the spec's list.
 
 **Acceptance criteria:**
-- [ ] The toolchain image builds, and `flutter --version` inside it prints 3.47.6 with commit `5fc3468`
-- [ ] `id -u` inside the image prints your UID (not 0), and `flutter doctor` shows the Android toolchain with licenses accepted
-- [ ] A wrong `FLUTTER_COMMIT` or SHA-256 fails the build (tried once each, then reverted)
+- [x] The toolchain image builds, and `flutter --version` inside it prints 3.47.6 with commit `5fc3468`
+- [x] `id -u` inside the image prints your UID (not 0), and `flutter doctor` shows the Android toolchain with licenses accepted
+- [x] A wrong `FLUTTER_COMMIT` or SHA-256 fails the build (tried once each, then reverted)
 
 **Verification:**
-- [ ] `docker build --target toolchain --build-arg UID=(id -u) --build-arg GID=(id -g) -t wmmt-toolchain .`
-- [ ] `docker run --rm wmmt-toolchain sh -c 'id -u && flutter --version && flutter doctor'`
-- [ ] Image size and first-build time recorded in REVIEW
+- [x] `docker build --target toolchain --build-arg UID=(id -u) --build-arg GID=(id -g) -t wmmt-toolchain .`
+- [x] `docker run --rm wmmt-toolchain sh -c 'id -u && flutter --version && flutter doctor'`
+- [x] Image size and first-build time recorded in REVIEW
 
 **Dependencies:** Task 1
 **Files:** `Dockerfile`, `.dockerignore`
@@ -90,13 +90,13 @@ Claude gives the exact commands, then checks both rulesets with a read-only `gh 
 - **`dart_test.yaml`** declares the `integration` tag so `flutter test` doesn't warn about an unknown tag.
 
 **Acceptance criteria:**
-- [ ] `docker build --target ci .` passes on a fresh clone (AC-OPS-2, local half)
-- [ ] A mis-formatted Dart file fails the build at the format step (AC-OPS-3, local half); reverted afterwards
-- [ ] `tool/check_coverage.sh` exits 1 on a missing file and when MIN is above the actual coverage, and 0 otherwise (tried with 101 and with 0)
+- [x] `docker build --target ci .` passes on a fresh clone (AC-OPS-2, local half)
+- [x] A mis-formatted Dart file fails the build at the format step (AC-OPS-3, local half); reverted afterwards
+- [x] `tool/check_coverage.sh` exits 1 on a missing file and when MIN is above the actual coverage, and 0 otherwise (tried with 101 and with 0)
 
 **Verification:**
-- [ ] `git clone . SCRATCH/clone`, then `docker build --target ci SCRATCH/clone`
-- [ ] Both secret scans print nothing
+- [x] `git clone . SCRATCH/clone`, then `docker build --target ci SCRATCH/clone`
+- [x] Both secret scans print nothing
 
 **Dependencies:** Task 2
 **Files:** `Dockerfile`, `tool/check_coverage.sh`, `dart_test.yaml`

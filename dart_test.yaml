@@ -1,0 +1,4 @@
+tags:
+  # Repository tests against the local Supabase stack. Excluded from the `ci` stage;
+  # run with `flutter test --tags integration` (CI job `rules`).
+  integration: {}

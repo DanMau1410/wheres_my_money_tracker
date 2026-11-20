@@ -22,7 +22,7 @@ No user-visible feature yet beyond the empty, navigable shell.
   - read `AppConfig.fromEnvironment()`; if any key is empty, show a developer-facing "Missing configuration: KEY" screen and stop, with no Supabase call
   - otherwise run `Supabase.initialize(url:, publishableKey:)`, then `runApp(MultiProvider(providers: dependencies, child: App()))`
 - **`lib/config/`:**
-  - `app_config.dart` reads `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` and `GOOGLE_WEB_CLIENT_ID` via `String.fromEnvironment`
+  - `app_config.dart` reads `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` via `String.fromEnvironment` (`auth` adds `GOOGLE_WEB_CLIENT_ID`)
   - `dependencies.dart` provides `SupabaseClient` (`Supabase.instance.client`) and `AppConfig`; later modules add their services and repositories here
 - **`lib/routing/`:**
   - `routes.dart` holds path constants: `/balance`, `/journal`, `/accounts`, `/settings`
@@ -88,7 +88,7 @@ String toDateKey(DateTime date);
 DateTime? fromDateKey(String value);
 bool isEntryDateInRange(DateTime date);
 
-class AppConfig { final String supabaseUrl, supabasePublishableKey, googleWebClientId; }
+class AppConfig { final String supabaseUrl, supabasePublishableKey; } // auth adds googleWebClientId
 ```
 
 Each module adds its routes to `lib/routing/router.dart` and its providers to `lib/config/dependencies.dart`.

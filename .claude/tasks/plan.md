@@ -108,12 +108,12 @@ The details are in [todo.md](todo.md).
 **Before Slice 1 (you):** create the rulesets `Dev PR` (PR required, squash only) and `Main PR` (PR required, merge commits allowed), both blocking force-push and deletion. Then commit `.claude/` on `docs/project-definition` and squash-merge it into `dev` through a PR.
 
 ### Slice 1: `feat/devops-gate`, the Docker quality gate
-- [ ] Task 1: Spec corrections, Flutter pin, version, lockfile, `.gitignore`
-- [ ] Task 2: Dockerfile `toolchain` stage and `.dockerignore`
-- [ ] Task 3: `ci` stage, coverage script, `integration` tag
+- [x] Task 1: Spec corrections, Flutter pin, version, lockfile, `.gitignore`
+- [x] Task 2: Dockerfile `toolchain` stage and `.dockerignore`
+- [x] Task 3: `ci` stage, coverage script, `integration` tag
 
 **Checkpoint 1:**
-- [ ] `docker build --target ci .` is green on a fresh clone
+- [x] `docker build --target ci .` is green on a fresh clone
 - [ ] REVIEW written → you commit, open a PR, squash-merge
 
 **Security:**

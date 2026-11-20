@@ -1,0 +1,33 @@
+# Keep secrets and machine-local files out of the build context, so it matches a fresh clone.
+.git
+.dart_tool/
+build/
+coverage/
+.idea/
+.claude/
+
+# Secrets and local config (dev_rules §9), at any depth
+config/local.json
+**/.env
+**/.env.*
+!**/.env.example
+supabase/.temp/
+**/key.properties
+**/*.jks
+**/*.keystore
+**/*.p12
+**/*.pem
+**/*.key
+
+# Generated on each machine; Flutter recreates them in the image
+android/local.properties
+android/.gradle/
+android/gradlew
+android/gradlew.bat
+android/gradle/wrapper/gradle-wrapper.jar
+
+# Platforms not built in v1
+ios/
+macos/
+linux/
+windows/
