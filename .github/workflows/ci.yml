@@ -1,0 +1,88 @@
+# Quality gate for every PR into dev or main (SPEC-devops.md). The job name `flutter` is a
+# required check in the rulesets, so it never changes. No secrets: PRs from forks run this too.
+name: CI
+
+on:
+  pull_request:
+    branches: [dev, main]
+  push:
+    branches: [dev, main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  flutter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Secret scan
+        run: sh tool/secret_scan.sh
+
+      - name: Pin check
+        run: sh tool/check_pins.sh
+
+      # The title becomes the squash commit on dev. It goes through env, never into the script.
+      - name: PR title follows Conventional Commits
+        if: github.event_name == 'pull_request'
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          if ! printf '%s\n' "$PR_TITLE" | grep -Eq '^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-z0-9-]+\))?!?: .+'; then
+            echo "::error::PR title must look like 'type(scope): summary', for example 'build(devops): add the CI workflow'"
+            exit 1
+          fi
+
+      # The toolchain's user gets the runner's UID/GID, as in release.yml, so both share the layer cache.
+      - name: Runner UID and GID
+        id: ids
+        run: |
+          echo "uid=$(id -u)" >> "$GITHUB_OUTPUT"
+          echo "gid=$(id -g)" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Quality gate (format, analyze, tests, coverage, web and APK builds)
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          target: ci-report
+          outputs: type=local,dest=out
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            UID=${{ steps.ids.outputs.uid }}
+            GID=${{ steps.ids.outputs.gid }}
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: coverage
+          path: out/lcov.info
+          if-no-files-found: error
+
+      - name: Build the web image (staging config)
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          target: web
+          load: true
+          tags: wmmt-web:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            APP_ENV=staging
+            UID=${{ steps.ids.outputs.uid }}
+            GID=${{ steps.ids.outputs.gid }}
+
+      - name: Smoke test the web image
+        run: |
+          docker run --rm -d -p 8080:8080 --name wmmt-web wmmt-web:ci
+          sh tool/smoke_web.sh http://localhost:8080

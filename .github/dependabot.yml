@@ -1,0 +1,30 @@
+# Weekly update PRs into dev, one dependency each. With `include: scope` the titles read
+# `build(deps): …` / `ci(deps): …`, so they pass the PR-title check in ci.yml.
+version: 2
+updates:
+  - package-ecosystem: pub
+    directory: /
+    schedule:
+      interval: weekly
+    target-branch: dev
+    commit-message:
+      prefix: build
+      include: scope
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    target-branch: dev
+    commit-message:
+      prefix: ci
+      include: scope
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+    target-branch: dev
+    commit-message:
+      prefix: build
+      include: scope

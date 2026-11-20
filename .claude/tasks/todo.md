@@ -103,8 +103,8 @@ Claude gives the exact commands, then checks both rulesets with a read-only `gh 
 **Scope:** S
 
 ### Checkpoint 1
-- [ ] Tasks 1–3 verified, and `git status` shows only the intended files
-- [ ] REVIEW written → you commit, open a PR into `dev` (no CI yet), squash-merge
+- [x] Tasks 1–3 verified, and `git status` shows only the intended files
+- [x] REVIEW written → you commit, open a PR into `dev` (no CI yet), squash-merge (PR #3, merged 2026-11-20)
 
 ---
 
@@ -120,8 +120,8 @@ Claude gives the exact commands, then checks both rulesets with a read-only `gh 
   - the Dockerfile's `FLUTTER_VERSION` differs from pubspec's `environment: flutter`
 
 **Acceptance criteria:**
-- [ ] Both scripts exit 0 on the repo
-- [ ] Untracked throwaway files make them fail:
+- [x] Both scripts exit 0 on the repo
+- [x] Untracked throwaway files make them fail:
   - a canary with one of scan 1's plain-word patterns
   - a file named `x.keystore`
   - a workflow with `uses: actions/checkout@v4`
@@ -131,7 +131,7 @@ Claude gives the exact commands, then checks both rulesets with a read-only `gh 
   All throwaway files are deleted afterwards.
 
 **Verification:**
-- [ ] `sh tool/secret_scan.sh; echo $status` and `sh tool/check_pins.sh; echo $status` (fish), before and after the throwaway files
+- [x] `sh tool/secret_scan.sh; echo $status` and `sh tool/check_pins.sh; echo $status` (fish), before and after the throwaway files
 
 **Dependencies:** Checkpoint 1
 **Files:** `tool/secret_scan.sh`, `tool/check_pins.sh`
@@ -153,15 +153,15 @@ Claude gives the exact commands, then checks both rulesets with a read-only `gh 
 - **`tool/smoke_web.sh URL`:** `curl` checks that `/` and `/journal/42` return 200 with the three headers.
 
 **Acceptance criteria:**
-- [ ] `docker run` of the `web` image, then `tool/smoke_web.sh http://localhost:8080`, passes (AC-OPS-7)
-- [ ] Chromium at `http://localhost:8080` renders the template app, and the console shows no CSP violations; every CSP change from the draft above is recorded in REVIEW with its reason
-- [ ] `docker run --rm wmmt-web id -u` is not 0
-- [ ] With dummy `config/local.json`, `android/key.properties` and `supabase/.env` present, `find` inside the `ci` and `web` images finds none of them (AC-OPS-8)
+- [x] `docker run` of the `web` image, then `tool/smoke_web.sh http://localhost:8080`, passes (AC-OPS-7)
+- [x] Chromium at `http://localhost:8080` (checked on :8088, since a local `flutter` dev server held :8080) renders the template app, and the console shows no CSP violations; every CSP change from the draft above is recorded in REVIEW with its reason
+- [x] `docker run --rm wmmt-web id -u` is not 0
+- [x] With dummy `config/local.json`, `android/key.properties` and `supabase/.env` present, `find` inside the `ci` and `web` images finds none of them (AC-OPS-8)
 
 **Verification:**
-- [ ] `docker build --target web --build-arg APP_ENV=staging -t wmmt-web .`
-- [ ] `docker run --rm -d -p 8080:8080 --name wmmt-web wmmt-web`, then the smoke script, then `docker stop wmmt-web`
-- [ ] `docker build --target web --build-arg APP_ENV=nope .` fails
+- [x] `docker build --target web --build-arg APP_ENV=staging -t wmmt-web .`
+- [x] `docker run --rm -d -p 8080:8080 --name wmmt-web wmmt-web`, then the smoke script, then `docker stop wmmt-web`
+- [x] `docker build --target web --build-arg APP_ENV=nope .` fails
 
 **Dependencies:** Checkpoint 1
 **Files:** `Dockerfile`, `docker/nginx.conf`, `config/local.example.json`, `config/staging.json`, `config/prod.json`, `tool/smoke_web.sh`
@@ -185,7 +185,7 @@ Claude gives the exact commands, then checks both rulesets with a read-only `gh 
 
 **Acceptance criteria:**
 - [ ] The slice PR into `dev` shows `flutter` green; job time and cache hits recorded in REVIEW (AC-OPS-4, `flutter` half)
-- [ ] `ci.yml` meets AC-OPS-12: `contents: read`, and no `secrets.` anywhere
+- [x] `ci.yml` meets AC-OPS-12: `contents: read`, and no `secrets.` anywhere
 - [ ] Throwaway PRs, closed unmerged, fail at the right step:
   - a mis-formatted file (AC-OPS-3)
   - the canary file, the title `update stuff`, and `uses: actions/checkout@v4` (AC-OPS-5)
@@ -193,7 +193,7 @@ Claude gives the exact commands, then checks both rulesets with a read-only `gh 
 
 **Verification:**
 - [ ] Read-only `gh pr checks` / `gh run view` on each PR
-- [ ] `sh tool/check_pins.sh` passes locally
+- [x] `sh tool/check_pins.sh` passes locally
 
 **Dependencies:** Tasks 4, 5
 **Files:** `.github/workflows/ci.yml`, `.github/dependabot.yml`, `Dockerfile`

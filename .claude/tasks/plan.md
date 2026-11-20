@@ -114,7 +114,7 @@ The details are in [todo.md](todo.md).
 
 **Checkpoint 1:**
 - [x] `docker build --target ci .` is green on a fresh clone
-- [ ] REVIEW written → you commit, open a PR, squash-merge
+- [x] REVIEW written → you commit, open a PR, squash-merge (PR #3, merged 2026-11-20)
 
 **Security:**
 - **Trust boundaries:** everything the toolchain downloads (Docker Hub, the Flutter repo, Google's SDK zips, the Ubuntu archive); the Docker build context.
@@ -125,8 +125,8 @@ The details are in [todo.md](todo.md).
   - the build runs as root → the `dev` user
 
 ### Slice 2: `feat/devops-ci`, the `flutter` check
-- [ ] Task 4: `tool/secret_scan.sh` and `tool/check_pins.sh`
-- [ ] Task 5: `build-web` and `web` stages, `nginx.conf`, config placeholders, smoke script
+- [x] Task 4: `tool/secret_scan.sh` and `tool/check_pins.sh`
+- [x] Task 5: `build-web` and `web` stages, `nginx.conf`, config placeholders, smoke script
 - [ ] Task 6: `ci.yml` job `flutter`, plus `dependabot.yml`
 
 **Checkpoint 2:**
