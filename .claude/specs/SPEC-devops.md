@@ -38,7 +38,7 @@ The app itself stays the `flutter create` template in this stage.
   - triggers: `pull_request` to `dev`/`main`, plus pushes to them
   - `permissions: contents: read`, no secrets
   - **Job `flutter`:**
-    - `docker buildx build --target ci` with GitHub Actions layer cache; coverage exported as an artifact
+    - `docker buildx build --target ci-report`, with no layer cache; coverage exported as an artifact. A runner builds the toolchain in about 1.5 min, while uploading the GitHub Actions cache took 5–11 min per run (measured on PR #4, 2026-11-20), and the `ci` layers change with every commit
     - `tool/secret_scan.sh`, `tool/check_pins.sh`
     - PR-title Conventional Commits check, a shell regex on the title: `^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-z0-9-]+\))?!?: .+`
     - `docker build --target web --build-arg APP_ENV=staging`, then a smoke test with `curl`: `/` and `/journal/42` return 200 with the headers above
