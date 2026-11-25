@@ -418,6 +418,7 @@ Deferred problems, each with what triggers its fix. Delete an entry when its fix
 | 2026-11-19 | Self sign-up with email/password and Google, limited to an allowlist; Gmail SMTP app password for v1 emails |
 | 2026-11-19 | Specs split into this project spec plus one spec per module; one module per stage |
 | 2026-11-19 | Stage 0 plan: five pinned Actions and Supabase CLI 3.2.0; Android signing secrets in `production`, behind a required reviewer; each CI check is required as soon as it's green; `GOOGLE_WEB_CLIENT_ID` arrives with `auth` |
+| 2026-11-20 | CI builds without the GitHub Actions layer cache: uploading it cost 5–11 min per run, while a runner rebuilds the toolchain in about 1.5 min |
 
 ## Open Questions
 

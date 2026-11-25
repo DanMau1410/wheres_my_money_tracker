@@ -58,7 +58,7 @@ Five slices, each on its own `feat/devops-*` branch, squash-merged into `dev`. T
 
 **Dependency and environment decisions (dev_rules §7):**
 - **Five GitHub Actions and Supabase CLI 3.2.0,** listed above (**approved 2026-11-19**). All come from their official publishers (GitHub, Docker, Supabase). They're the minimum set:
-  - `setup-buildx` + `build-push` give CI the layer cache, without which every run rebuilds the 4–5 GB toolchain
+  - `setup-buildx` + `build-push` run the Dockerfile stages in CI. They used to share a layer cache, dropped on 2026-11-20 after PR #4 showed a runner rebuilds the toolchain in about 1.5 min, while the cache upload took 5–11 min
   - `upload-artifact` publishes coverage, as the spec says
   - releases use the `gh` CLI that runners already have, so no release Action is needed
   
@@ -130,9 +130,9 @@ The details are in [todo.md](todo.md).
 - [ ] Task 6: `ci.yml` job `flutter`, plus `dependabot.yml`
 
 **Checkpoint 2:**
-- [ ] The slice PR shows `flutter` green
+- [x] The slice PR shows `flutter` green (PR #4, merged 2026-11-20)
 - [ ] Throwaway PRs fail as expected (AC-OPS-3, AC-OPS-5) and are closed unmerged
-- [ ] You make `flutter` a required check in both rulesets (decided 2026-11-19: each check is required as soon as it's green)
+- [x] You make `flutter` a required check in both rulesets (decided 2026-11-19: each check is required as soon as it's green)
 
 **Security:**
 - **Trust boundaries:** public PRs from forks, Dependabot PRs, third-party Actions, the browser loading the web image.
@@ -204,9 +204,9 @@ The details are in [todo.md](todo.md).
 
 | Risk | Impact | Mitigation |
 |---|---|---|
-| The toolchain image is 4–5 GB and takes 15–25 min to build the first time | Med | layer order; GHA layer cache; measure in Task 2; NDK kept because release builds use it to strip symbols |
+| The toolchain image is 4–5 GB and takes 15–25 min to build the first time | Med | layer order; measure in Task 2; NDK kept because release builds use it to strip symbols. On a runner the build takes about 1.5 min (PR #4), so CI has no layer cache |
 | Gradle downloads on every CI run make the `flutter` job slow | Med | cache mount locally; measure in Task 6; warm-up layer if the job takes over 15 min |
-| The GHA cache (10 GB per repo) evicts toolchain layers | Low | `mode=max`; watch cache hits in Task 6 |
+| ~~The GHA cache (10 GB per repo) evicts toolchain layers~~ | — | Gone: the cache was dropped on 2026-11-20 |
 | The CSP breaks Flutter web (CanvasKit, fonts, inline styles) | Med | `--no-web-resources-cdn`; Chromium console check in Task 5; loosen only what's needed and record why |
 | Supabase CLI v3 flags differ from the docs | Med | every command checked with `--help` before use; the spec is updated in Task 1 |
 | `supabase start` on the runner is slow or flaky | Low | exclude unused services (checked with `--help`); a job timeout |

@@ -177,19 +177,19 @@ Claude gives the exact commands, then checks both rulesets with a read-only `gh 
     1. checkout
     2. `tool/secret_scan.sh` and `tool/check_pins.sh`
     3. on PRs only: the title check, with the title passed through `env: PR_TITLE`
-    4. setup-buildx; build-push with `target: ci-report`, `outputs: type=local,dest=out`, the GHA cache (`mode=max`), and the runner's UID/GID as build args
+    4. setup-buildx; build-push with `target: ci-report`, `outputs: type=local,dest=out`, the GHA cache (`mode=max`), and the runner's UID/GID as build args (cache, UID/GID and `out/` changed in the follow-up below)
     5. upload `out/lcov.info` as the `coverage` artifact
     6. build the `web` image (`APP_ENV=staging`, `load: true`), run it and run `tool/smoke_web.sh`
 - **Dockerfile:** add the `ci-report` stage (`FROM scratch`, `COPY --from=ci /app/coverage/lcov.info /`).
 - **`.github/dependabot.yml`:** `pub`, `github-actions` and `docker`, weekly, `target-branch: dev`, Conventional Commits prefixes (`build(deps)` for pub and docker, `ci(deps)` for github-actions).
 
 **Acceptance criteria:**
-- [ ] The slice PR into `dev` shows `flutter` green; job time and cache hits recorded in REVIEW (AC-OPS-4, `flutter` half)
+- [x] The slice PR into `dev` shows `flutter` green; job time and cache hits recorded in REVIEW (AC-OPS-4, `flutter` half). PR #4: 17 min 11 s, all cold (first run). Push to `dev` after the merge: 15 min 16 s, also cold, since a push can't read a PR's cache. Of that, 8–13 min is uploading the layer cache (3.8 GB in use), and the web step re-runs the gate because `out/` lands in the build context. Fix proposed for the next PR
 - [x] `ci.yml` meets AC-OPS-12: `contents: read`, and no `secrets.` anywhere
 - [ ] Throwaway PRs, closed unmerged, fail at the right step:
   - a mis-formatted file (AC-OPS-3)
   - the canary file, the title `update stuff`, and `uses: actions/checkout@v4` (AC-OPS-5)
-- [ ] After the merge, GitHub lists the three Dependabot ecosystems (AC-OPS-13)
+- [ ] GitHub lists the three Dependabot ecosystems (AC-OPS-13). Moved to Task 12: Dependabot reads `dependabot.yml` only from the default branch (`main`), so it starts when `dev` merges into `main` at the stage close, not after this slice's merge
 
 **Verification:**
 - [ ] Read-only `gh pr checks` / `gh run view` on each PR
@@ -201,8 +201,24 @@ Claude gives the exact commands, then checks both rulesets with a read-only `gh 
 
 ### Checkpoint 2
 - [ ] Tasks 4–6 verified; the slice PR is green; throwaway PRs closed
-- [ ] REVIEW → you commit, open the PR, squash-merge once green
-- [ ] You make `flutter` a required check in both rulesets
+- [x] REVIEW → you commit, open the PR, squash-merge once green (PR #4, merged 2026-11-20)
+- [x] You make `flutter` a required check in both rulesets (checked with `gh api`: both require `flutter` from GitHub Actions)
+
+### Follow-up: `fix/devops-ci-speed`, drop the CI layer cache (approved 2026-11-20)
+
+**Description:** PR #4's runs took 15–17 min. Most of that was uploading the GitHub Actions layer cache (5–11 min per run), while a runner builds the toolchain in about 1.5 min. Also, the gate wrote `out/lcov.info` into the checkout, so the web-image step's `COPY . .` missed the cache and the whole gate ran a second time.
+- `ci.yml`:
+  - remove `cache-from`/`cache-to` and the runner UID/GID step and build args
+  - export `ci-report` to `${{ runner.temp }}`, outside the build context
+- spec, decisions log and plan updated first
+
+**Acceptance criteria:**
+- [ ] The fix PR's `flutter` run is green, and the web step shows the `ci` stage `CACHED` (no second gate run)
+- [ ] The job takes well under the old 15–17 min, with the time recorded here
+- [x] `check_pins.sh` and both secret scans pass; `ci.yml` still meets AC-OPS-12
+
+**Files:** `.github/workflows/ci.yml`, `.claude/specs/SPEC-devops.md`, `.claude/specs/SPEC.md`, `.claude/tasks/plan.md`, `.claude/tasks/todo.md`
+**Scope:** XS
 
 ---
 
@@ -347,7 +363,7 @@ There's no integration step yet (plan.md).
 - **Trigger and job:** on `push` of tags `v*`; job `release` in `environment: production`, with `permissions: contents: write`.
 - **Steps:**
   1. checkout; setup-buildx
-  2. build the `toolchain` image (GHA cache, the runner's UID/GID, `load: true`)
+  2. build the `toolchain` image (the runner's UID/GID for the bind mount, `load: true`; no layer cache)
   3. decode `ANDROID_KEYSTORE_BASE64` to `$RUNNER_TEMP/upload.jks`
   4. `docker run` the toolchain with the repo and the keystore mounted read-only and the signing values as env vars:
      - `flutter build apk --release --build-number=$GITHUB_RUN_NUMBER --dart-define-from-file=config/prod.json` (`staging.json` for `-rc.N` tags)

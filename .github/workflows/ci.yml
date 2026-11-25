@@ -41,31 +41,23 @@ jobs:
             exit 1
           fi
 
-      # The toolchain's user gets the runner's UID/GID, as in release.yml, so both share the layer cache.
-      - name: Runner UID and GID
-        id: ids
-        run: |
-          echo "uid=$(id -u)" >> "$GITHUB_OUTPUT"
-          echo "gid=$(id -g)" >> "$GITHUB_OUTPUT"
-
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
 
+      # No GitHub Actions layer cache: a runner builds the toolchain in about 1.5 min, while uploading
+      # the cache took 5–11 min per run (PR #4). The web build below reuses this builder's layers.
+      # The report goes outside the checkout: a file in the build context would make the next
+      # build's `COPY . .` miss and run the whole gate again.
       - name: Quality gate (format, analyze, tests, coverage, web and APK builds)
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: .
           target: ci-report
-          outputs: type=local,dest=out
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          build-args: |
-            UID=${{ steps.ids.outputs.uid }}
-            GID=${{ steps.ids.outputs.gid }}
+          outputs: type=local,dest=${{ runner.temp }}/ci-report
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: coverage
-          path: out/lcov.info
+          path: ${{ runner.temp }}/ci-report/lcov.info
           if-no-files-found: error
 
       - name: Build the web image (staging config)
@@ -75,12 +67,7 @@ jobs:
           target: web
           load: true
           tags: wmmt-web:ci
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          build-args: |
-            APP_ENV=staging
-            UID=${{ steps.ids.outputs.uid }}
-            GID=${{ steps.ids.outputs.gid }}
+          build-args: APP_ENV=staging
 
       - name: Smoke test the web image
         run: |
